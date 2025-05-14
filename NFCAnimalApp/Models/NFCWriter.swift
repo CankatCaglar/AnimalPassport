@@ -91,7 +91,7 @@ class NFCWriter: NSObject, NFCNDEFReaderSessionDelegate {
                     if (error as NSError).domain == NFCReaderError.errorDomain && 
                        (error as NSError).code == NFCReaderError.ndefReaderSessionErrorTagNotWritable.rawValue {
                         print("Tag is read-only, cannot format")
-                        session.invalidate(errorMessage: "This tag is read-only")
+                        session.invalidate(errorMessage: "This tag is read-only and cannot be formatted")
                         completion(false)
                         return
                     }

@@ -330,6 +330,26 @@ struct SearchAnimalView: View {
                         }
                     }
                     .padding(.horizontal)
+                } else {
+                    // Show centered message when no search has been performed
+                    VStack(spacing: 24) {
+                        ZStack {
+                            Circle()
+                                .fill(Theme.darkGreen)
+                                .frame(width: 48, height: 48)
+                            Image(systemName: "magnifyingglass")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 26, height: 26)
+                                .foregroundColor(.white)
+                        }
+                        Text("Enter your animal's ID above to access all information about your animal.")
+                            .font(.title3)
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(Theme.darkGreen)
+                            .padding(.horizontal, 32)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: UIScreen.main.bounds.height * 0.60)
                 }
                 
                 Spacer(minLength: 20)
@@ -341,7 +361,7 @@ struct SearchAnimalView: View {
             ToolbarItem(placement: .principal) {
                 Text("Animal Search")
                     .font(.headline)
-                    .foregroundColor(Theme.darkGreen)
+                    .foregroundColor(.white)
             }
         }
         .alert("Error", isPresented: $showError) {

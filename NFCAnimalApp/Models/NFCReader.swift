@@ -145,25 +145,25 @@ class NFCReader: NSObject, NFCNDEFReaderSessionDelegate {
                     switch (error as NSError).code {
                     case NFCReaderError.ndefReaderSessionErrorTagNotWritable.rawValue:
                         print("Tag is not formatted with NDEF data")
-                        session.alertMessage = "Tag boş. Lütfen önce tag'e veri yazın."
+                        session.alertMessage = "Tag is not formatted. Please write data to the tag first."
                         session.invalidate()
                         self.completion?(.failure(NSError(domain: "NFCReadError", code: -1, 
-                            userInfo: [NSLocalizedDescriptionKey: "Tag boş. Lütfen önce tag'e veri yazın."])))
+                            userInfo: [NSLocalizedDescriptionKey: "Tag is not formatted. Please write data to the tag first."])))
                         return
                     case NFCReaderError.readerTransceiveErrorTagConnectionLost.rawValue:
                         // Connection error, will be handled by didInvalidateWithError
                         print("Connection error during read")
-                        session.invalidate(errorMessage: "Bağlantı kesildi. Lütfen telefonu tag'e yakın tutun.")
+                        session.invalidate(errorMessage: "Connection lost. Please keep your phone close to the tag.")
                         return
                     default:
                         print("Unknown NFC error: \(error)")
-                        session.invalidate(errorMessage: "Okuma başarısız oldu. Lütfen tekrar deneyin.")
+                        session.invalidate(errorMessage: "Reading failed. Please try again.")
                         self.completion?(.failure(error))
                         return
                     }
                 }
                 
-                session.invalidate(errorMessage: "Okuma başarısız oldu. Lütfen tekrar deneyin.")
+                session.invalidate(errorMessage: "Reading failed. Please try again.")
                 self.completion?(.failure(error))
                 return
             }
@@ -172,9 +172,9 @@ class NFCReader: NSObject, NFCNDEFReaderSessionDelegate {
                   let record = message.records.first,
                   let payloadString = String(data: record.payload, encoding: .utf8) else {
                 print("Failed to decode payload")
-                session.invalidate(errorMessage: "Tag verisi okunamadı.")
+                session.invalidate(errorMessage: "Could not read tag data.")
                 self.completion?(.failure(NSError(domain: "NFCReadError", code: -1, 
-                    userInfo: [NSLocalizedDescriptionKey: "Tag verisi okunamadı."])))
+                    userInfo: [NSLocalizedDescriptionKey: "Could not read tag data."])))
                 return
             }
             
@@ -184,15 +184,15 @@ class NFCReader: NSObject, NFCNDEFReaderSessionDelegate {
                 if let animalData = try NFCAnimalData.fromJSON(payloadString) {
                     print("Successfully parsed animal data")
                     self.completion?(.success(animalData))
-                    session.alertMessage = "Tag başarıyla okundu!"
+                    session.alertMessage = "Tag read successfully!"
                     session.invalidate()
                 } else {
                     throw NSError(domain: "NFCReadError", code: -1, 
-                        userInfo: [NSLocalizedDescriptionKey: "Veri ayrıştırılamadı."])
+                        userInfo: [NSLocalizedDescriptionKey: "Could not parse data."])
                 }
             } catch {
                 print("Failed to parse data: \(error)")
-                session.invalidate(errorMessage: "Veri ayrıştırılamadı.")
+                session.invalidate(errorMessage: "Could not parse data.")
                 self.completion?(.failure(error))
             }
         }

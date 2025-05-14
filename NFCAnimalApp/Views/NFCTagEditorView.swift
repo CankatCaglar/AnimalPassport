@@ -5,6 +5,7 @@ import FirebaseFirestore
 
 struct NFCTagEditorView: View {
     @Environment(\.presentationMode) var presentationMode
+    @StateObject private var activitiesViewModel = ActivitiesViewModel()
     @State private var showingScannerAlert = false
     @State private var showingError = false
     @State private var errorMessage = ""
@@ -12,6 +13,7 @@ struct NFCTagEditorView: View {
     @State private var successMessage = ""
     @State private var showingReadDataAlert = false
     @State private var readDataMessage = ""
+    @State private var recentActivities: [Activity] = []
     
     // NFC Reader and Writer instances
     private let nfcReader = NFCReader()
@@ -121,6 +123,8 @@ struct NFCTagEditorView: View {
                         .fontWeight(.bold)
                         .foregroundColor(Theme.darkGreen)
                         .padding(.bottom, 20)
+                    
+                    // Main Action Buttons
                     if userType.lowercased() == "veterinarian" {
                         VStack(spacing: 20) {
                             Button(action: readFromNFCTag) {
@@ -194,6 +198,76 @@ struct NFCTagEditorView: View {
                             }
                         }
                         .padding(.horizontal)
+                        
+                        // Recent Activities Section
+                        VStack(alignment: .leading, spacing: 15) {
+                            Text("Recent Activities")
+                                .font(.headline)
+                                .foregroundColor(Theme.darkGreen)
+                                .padding(.horizontal)
+                            
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 15) {
+                                    if activitiesViewModel.activities.isEmpty {
+                                        VStack(spacing: 8) {
+                                            Image(systemName: "clock.arrow.circlepath")
+                                                .font(.system(size: 32))
+                                                .foregroundColor(Theme.rust)
+                                            Text("No recent activities")
+                                                .font(.system(size: 16, weight: .medium))
+                                                .foregroundColor(Theme.darkGreen)
+                                        }
+                                        .frame(width: 200, height: 100)
+                                        .background(Color.white)
+                                        .cornerRadius(12)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(Theme.lightGreen, lineWidth: 1)
+                                        )
+                                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                                    } else {
+                                        ForEach(activitiesViewModel.activities) { activity in
+                                            ActivityCard(
+                                                icon: iconForActivityType(activity.type),
+                                                title: activity.type.rawValue,
+                                                description: "Animal ID: \(activity.animalId)",
+                                                time: activity.timeAgo
+                                            )
+                                        }
+                                    }
+                                }
+                                .padding(.horizontal)
+                            }
+                        }
+                        .padding(.top, 30)
+                        
+                        // Statistics Section
+                        VStack(alignment: .leading, spacing: 15) {
+                            Text("Statistics")
+                                .font(.headline)
+                                .foregroundColor(Theme.darkGreen)
+                                .padding(.horizontal)
+                            
+                            HStack(spacing: 15) {
+                                StatCard(
+                                    icon: "tag.fill",
+                                    title: "Total Tags",
+                                    value: "156"
+                                )
+                                StatCard(
+                                    icon: "checkmark.circle.fill",
+                                    title: "Active Tags",
+                                    value: "142"
+                                )
+                                StatCard(
+                                    icon: "clock.fill",
+                                    title: "This Month",
+                                    value: "24"
+                                )
+                            }
+                            .padding(.horizontal)
+                        }
+                        .padding(.top, 20)
                     } else if userType.lowercased() == "pet-owner" {
                         VStack(spacing: 20) {
                             Button(action: { readFromNFCTag(); showReadData = false }) {
@@ -242,7 +316,7 @@ struct NFCTagEditorView: View {
             ToolbarItem(placement: .principal) {
                 Text("Edit NFC Tag")
                     .font(.headline)
-                    .foregroundColor(Theme.darkGreen)
+                    .foregroundColor(.white)
             }
         }
         .alert("NFC Scanner", isPresented: $showingScannerAlert) {
@@ -266,6 +340,7 @@ struct NFCTagEditorView: View {
             Text(readDataMessage)
         }
         .onAppear {
+            // Activities will be automatically loaded by the ViewModel
             // Kullanıcı tipini Firestore'dan çek
             if let user = Auth.auth().currentUser {
                 let db = Firestore.firestore()
@@ -298,35 +373,11 @@ struct NFCTagEditorView: View {
                     self.deathDate = animalData.deathDate ?? Date()
                     self.deathLocation = animalData.deathLocation ?? ""
                     
-                    // Vaccinations
-                    self.sapVaccine = animalData.vaccinations.sapVaccine
-                    self.brucellaVaccine = animalData.vaccinations.brucellaVaccine
-                    self.pasteurellaVaccine = animalData.vaccinations.pasteurellaVaccine
-                    self.otherVaccine = animalData.vaccinations.otherVaccine
+                    // Log the read activity
+                    Activity.logActivity(type: .readTag, animalId: animalData.id)
                     
-                    // Slaughterhouse
-                    if let slaughterhouse = animalData.slaughterhouse {
-                        self.slaughterhouseName = slaughterhouse.name
-                        self.slaughterhouseAddress = slaughterhouse.address
-                        self.slaughterhouseLicenseNo = slaughterhouse.licenseNumber
-                        self.slaughterDate = slaughterhouse.slaughterDate
-                    }
-                    
-                    // Farm Information
-                    self.countryCode = animalData.farmInformation.countryCode
-                    self.provinceCode = animalData.farmInformation.provinceCode
-                    self.farmId = animalData.farmInformation.farmId
-                    self.farmAddress = animalData.farmInformation.address
-                    self.farmCoordinates = animalData.farmInformation.coordinates
-                    self.farmPhone = animalData.farmInformation.phone
-                    self.farmFax = animalData.farmInformation.fax ?? ""
-                    self.farmEmail = animalData.farmInformation.email ?? ""
-                    
-                    // Owner Information
-                    self.ownerFirstName = animalData.ownerInformation.firstName
-                    self.ownerLastName = animalData.ownerInformation.lastName
-                    self.ownerIdNumber = animalData.ownerInformation.idNumber
-                    self.ownerAddress = animalData.ownerInformation.address
+                    // Refresh activities
+                    activitiesViewModel.refresh()
                     
                     // Okuma başarılıysa, kullanıcı tipi ne olursa olsun bilgileri göster
                     showReadData = true
@@ -353,6 +404,12 @@ struct NFCTagEditorView: View {
                         self.nfcWriter.writeToTag(animalData: self.nfcAnimalData) { success, message in
                             DispatchQueue.main.async {
                                 if success {
+                                    // Log the write activity
+                                    Activity.logActivity(type: .writeTag, animalId: self.animalId)
+                                    
+                                    // Refresh activities
+                                    self.activitiesViewModel.refresh()
+                                    
                                     self.successMessage = "Data successfully saved! ID: \(id)"
                                     self.showingSuccessAlert = true
                                 } else {
@@ -373,6 +430,12 @@ struct NFCTagEditorView: View {
             self.nfcWriter.writeToTag(animalData: self.nfcAnimalData) { success, message in
                 DispatchQueue.main.async {
                     if success {
+                        // Log the write activity
+                        Activity.logActivity(type: .writeTag, animalId: self.animalId)
+                        
+                        // Refresh activities
+                        self.activitiesViewModel.refresh()
+                        
                         self.successMessage = "Successfully written to tag! Data will be synced when internet is available."
                         self.showingSuccessAlert = true
                     } else {
@@ -595,6 +658,19 @@ struct NFCTagEditorView: View {
             EditorTextField(text: $ownerAddress, label: "Address")
         }
     }
+    
+    private func iconForActivityType(_ type: Activity.ActivityType) -> String {
+        switch type {
+        case .readTag:
+            return "wave.3.right.circle.fill"
+        case .writeTag:
+            return "wave.3.right.circle.fill"
+        case .addAnimal:
+            return "plus.circle.fill"
+        case .updateAnimal:
+            return "pencil.circle.fill"
+        }
+    }
 }
 
 struct EditorTextField: View {
@@ -635,5 +711,66 @@ struct DateField: View {
                 .foregroundColor(Theme.darkGreen)
                 .environment(\.colorScheme, .light)
         }
+    }
+}
+
+// MARK: - Supporting Views
+struct ActivityCard: View {
+    let icon: String
+    let title: String
+    let description: String
+    let time: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: icon)
+                    .font(.system(size: 20))
+                    .foregroundColor(Theme.rust)
+                Text(title)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Theme.darkGreen)
+            }
+            
+            Text(description)
+                .font(.system(size: 14))
+                .foregroundColor(Theme.darkGreen.opacity(0.8))
+            
+            Text(time)
+                .font(.system(size: 12))
+                .foregroundColor(Theme.darkGreen.opacity(0.6))
+        }
+        .padding()
+        .frame(width: 200)
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+    }
+}
+
+struct StatCard: View {
+    let icon: String
+    let title: String
+    let value: String
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 24))
+                .foregroundColor(Theme.rust)
+            
+            Text(value)
+                .font(.system(size: 24, weight: .bold))
+                .foregroundColor(Theme.darkGreen)
+            
+            Text(title)
+                .font(.system(size: 12))
+                .foregroundColor(Theme.darkGreen.opacity(0.8))
+        }
+        .frame(maxWidth: .infinity)
+        .padding()
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
 } 

@@ -7,6 +7,7 @@ struct Theme {
     static let cream = Color(hex: "F1DCA7")
     static let rust = Color(hex: "D08C60")
     static let brown = Color(hex: "997B66")
+    static let oliveGreen = Color(hex: "75795A")
 }
 
 extension Color {
