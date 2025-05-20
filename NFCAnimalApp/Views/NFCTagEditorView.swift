@@ -65,6 +65,53 @@ struct NFCTagEditorView: View {
     @State private var userType: String = ""
     @State private var showAnimalForm = false
     @State private var showReadData = false
+    @State private var showGenderSheet = false
+    
+    let genderOptions = ["Male", "Female"]
+    
+    private func clearAllFields() {
+        animalId = ""
+        animalName = ""
+        birthDate = Date()
+        gender = ""
+        breed = ""
+        parentId = ""
+        birthFarmId = ""
+        currentFarmId = ""
+        transferDate = Date()
+        exportCountry = ""
+        exportDate = Date()
+        deathDate = Date()
+        deathLocation = ""
+        
+        // Vaccinations
+        sapVaccine = nil
+        brucellaVaccine = nil
+        pasteurellaVaccine = nil
+        otherVaccine = nil
+        
+        // Slaughterhouse Information
+        slaughterhouseName = ""
+        slaughterhouseAddress = ""
+        slaughterhouseLicenseNo = ""
+        slaughterDate = Date()
+        
+        // Farm Information
+        countryCode = ""
+        provinceCode = ""
+        farmId = ""
+        farmAddress = ""
+        farmCoordinates = ""
+        farmPhone = ""
+        farmFax = ""
+        farmEmail = ""
+        
+        // Owner Information
+        ownerFirstName = ""
+        ownerLastName = ""
+        ownerIdNumber = ""
+        ownerAddress = ""
+    }
     
     private var nfcAnimalData: NFCAnimalData {
         NFCAnimalData(
@@ -146,12 +193,17 @@ struct NFCTagEditorView: View {
                                 )
                                 .shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 2)
                             }
-                            Button(action: { showAnimalForm.toggle() }) {
+                            Button(action: { 
+                                if showAnimalForm {
+                                    clearAllFields()
+                                }
+                                showAnimalForm.toggle() 
+                            }) {
                                 HStack(spacing: 10) {
                                     Image(systemName: showAnimalForm ? "minus.circle.fill" : "plus.circle.fill")
                                         .font(.system(size: 32))
                                         .foregroundColor(Theme.rust)
-                                    Text(showAnimalForm ? "Hide Animal Form" : "Add Animal")
+                                    Text(showAnimalForm ? "Hide Animal Form" : "Add/Edit Animal")
                                         .font(.system(size: 16, weight: .medium))
                                         .foregroundColor(Theme.rust)
                                 }
@@ -351,6 +403,9 @@ struct NFCTagEditorView: View {
                 }
             }
         }
+        .onTapGesture {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
     }
     
     private func readFromNFCTag() {
@@ -457,15 +512,43 @@ struct NFCTagEditorView: View {
     
     private var animalInfoSection: some View {
         VStack(alignment: .leading, spacing: 15) {
-            EditorTextField(text: $animalId, label: "Animal ID")
+            EditorTextField(text: $animalId, label: "Animal ID", keyboardType: .numberPad)
             EditorTextField(text: $animalName, label: "Animal Name")
             DateField(date: $birthDate, label: "Birth Date")
                 .padding(.horizontal, 0)
-            EditorTextField(text: $gender, label: "Gender")
+            // Gender Selector
+            VStack(alignment: .leading, spacing: 5) {
+                Text("Gender")
+                    .foregroundColor(Theme.darkGreen)
+                    .font(.subheadline)
+                Button(action: { showGenderSheet = true }) {
+                    HStack {
+                        Text(gender.isEmpty ? "Select Gender" : gender)
+                            .foregroundColor(gender.isEmpty ? .gray : Theme.darkGreen)
+                        Spacer()
+                        Image(systemName: "chevron.down")
+                            .foregroundColor(.gray)
+                    }
+                    .padding(10)
+                    .background(Color.white)
+                    .cornerRadius(8)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Theme.lightGreen, lineWidth: 1)
+                    )
+                }
+                .actionSheet(isPresented: $showGenderSheet) {
+                    ActionSheet(title: Text("Select Gender"), buttons: [
+                        .default(Text("Male")) { gender = "Male" },
+                        .default(Text("Female")) { gender = "Female" },
+                        .cancel()
+                    ])
+                }
+            }
             EditorTextField(text: $breed, label: "Breed")
-            EditorTextField(text: $parentId, label: "Parent ID")
-            EditorTextField(text: $birthFarmId, label: "Birth Farm ID")
-            EditorTextField(text: $currentFarmId, label: "Current Farm ID")
+            EditorTextField(text: $parentId, label: "Parent ID", keyboardType: .numberPad)
+            EditorTextField(text: $birthFarmId, label: "Birth Farm ID", keyboardType: .numberPad)
+            EditorTextField(text: $currentFarmId, label: "Current Farm ID", keyboardType: .numberPad)
             // Additional Information
             sectionTitle("Additional Information")
             DateField(date: $deathDate, label: "Death Date")
@@ -631,7 +714,7 @@ struct NFCTagEditorView: View {
         VStack(alignment: .leading, spacing: 15) {
             EditorTextField(text: $slaughterhouseName, label: "Name")
             EditorTextField(text: $slaughterhouseAddress, label: "Address")
-            EditorTextField(text: $slaughterhouseLicenseNo, label: "License Number")
+            EditorTextField(text: $slaughterhouseLicenseNo, label: "License Number", keyboardType: .numberPad)
             DateField(date: $slaughterDate, label: "Slaughter Date")
                 .padding(.horizontal, 0)
         }
@@ -641,11 +724,11 @@ struct NFCTagEditorView: View {
         VStack(alignment: .leading, spacing: 15) {
             EditorTextField(text: $countryCode, label: "Country Code")
             EditorTextField(text: $provinceCode, label: "Province Code")
-            EditorTextField(text: $farmId, label: "Farm ID")
+            EditorTextField(text: $farmId, label: "Farm ID", keyboardType: .numberPad)
             EditorTextField(text: $farmAddress, label: "Farm Address")
             EditorTextField(text: $farmCoordinates, label: "Coordinates")
-            EditorTextField(text: $farmPhone, label: "Phone")
-            EditorTextField(text: $farmFax, label: "Fax")
+            EditorTextField(text: $farmPhone, label: "Phone", keyboardType: .numberPad)
+            EditorTextField(text: $farmFax, label: "Fax", keyboardType: .numberPad)
             EditorTextField(text: $farmEmail, label: "Email")
         }
     }
@@ -654,7 +737,7 @@ struct NFCTagEditorView: View {
         VStack(alignment: .leading, spacing: 15) {
             EditorTextField(text: $ownerFirstName, label: "First Name")
             EditorTextField(text: $ownerLastName, label: "Last Name")
-            EditorTextField(text: $ownerIdNumber, label: "ID Number")
+            EditorTextField(text: $ownerIdNumber, label: "ID Number", keyboardType: .numberPad)
             EditorTextField(text: $ownerAddress, label: "Address")
         }
     }
@@ -676,6 +759,7 @@ struct NFCTagEditorView: View {
 struct EditorTextField: View {
     @Binding var text: String
     let label: String
+    var keyboardType: UIKeyboardType = .default
     
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
@@ -691,6 +775,7 @@ struct EditorTextField: View {
                     RoundedRectangle(cornerRadius: 8)
                         .stroke(Theme.lightGreen, lineWidth: 1)
                 )
+                .keyboardType(keyboardType)
         }
     }
 }
