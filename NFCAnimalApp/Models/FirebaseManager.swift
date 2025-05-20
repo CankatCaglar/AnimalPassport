@@ -55,6 +55,11 @@ class FirebaseManager {
             dictionary["createdAt"] = FieldValue.serverTimestamp()
             dictionary["updatedAt"] = FieldValue.serverTimestamp()
             
+            // deathDate nil ise dictionary'den çıkar
+            if animalData.deathDate == nil {
+                dictionary.removeValue(forKey: "deathDate")
+            }
+            
             // Save to Firestore
             db.collection(animalsCollection).document(animalData.id).setData(dictionary) { error in
                 if let error = error {
@@ -249,6 +254,35 @@ class FirebaseManager {
                     completion(.success(()))
                 }
             }
+        }
+    }
+    
+    // MARK: - Statistics
+    func fetchAnimalStatistics(completion: @escaping (Int, Int, Int) -> Void) {
+        let animalsRef = db.collection(animalsCollection)
+        // 1. Total Tags
+        animalsRef.getDocuments { snapshot, error in
+            guard let documents = snapshot?.documents else {
+                completion(0, 0, 0)
+                return
+            }
+            let total = documents.count
+            // 2. Active Tags (deathDate alanı olmayanlar veya boş olanlar)
+            let active = documents.filter { doc in
+                let deathDate = doc.data()["deathDate"]
+                return deathDate == nil || (deathDate is NSNull) || (deathDate as? String == "") || (deathDate as? String == "null")
+            }.count
+            // 3. This Month (createdAt bu ay olanlar)
+            let calendar = Calendar.current
+            let now = Date()
+            let thisMonth = documents.filter { doc in
+                if let ts = doc.data()["createdAt"] as? Timestamp {
+                    let date = ts.dateValue()
+                    return calendar.isDate(date, equalTo: now, toGranularity: .month) && calendar.isDate(date, equalTo: now, toGranularity: .year)
+                }
+                return false
+            }.count
+            completion(total, active, thisMonth)
         }
     }
 } 

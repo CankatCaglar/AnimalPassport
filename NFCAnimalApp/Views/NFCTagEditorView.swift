@@ -31,7 +31,7 @@ struct NFCTagEditorView: View {
     @State private var transferDate = Date()
     @State private var exportCountry = ""
     @State private var exportDate = Date()
-    @State private var deathDate = Date()
+    @State private var deathDate: Date? = nil
     @State private var deathLocation = ""
     
     // Vaccinations
@@ -67,6 +67,11 @@ struct NFCTagEditorView: View {
     @State private var showReadData = false
     @State private var showGenderSheet = false
     
+    @State private var statTotalTags: Int = 0
+    @State private var statActiveTags: Int = 0
+    @State private var statThisMonth: Int = 0
+    @State private var statsListener: ListenerRegistration? = nil
+    
     let genderOptions = ["Male", "Female"]
     
     private func clearAllFields() {
@@ -81,7 +86,7 @@ struct NFCTagEditorView: View {
         transferDate = Date()
         exportCountry = ""
         exportDate = Date()
-        deathDate = Date()
+        deathDate = nil
         deathLocation = ""
         
         // Vaccinations
@@ -157,6 +162,14 @@ struct NFCTagEditorView: View {
                 address: ownerAddress
             )
         )
+    }
+    
+    private func fetchStatistics() {
+        FirebaseManager.shared.fetchAnimalStatistics { total, active, thisMonth in
+            statTotalTags = total
+            statActiveTags = active
+            statThisMonth = thisMonth
+        }
     }
     
     var body: some View {
@@ -304,17 +317,17 @@ struct NFCTagEditorView: View {
                                 StatCard(
                                     icon: "tag.fill",
                                     title: "Total Tags",
-                                    value: "156"
+                                    value: String(statTotalTags)
                                 )
                                 StatCard(
                                     icon: "checkmark.circle.fill",
                                     title: "Active Tags",
-                                    value: "142"
+                                    value: String(statActiveTags)
                                 )
                                 StatCard(
                                     icon: "clock.fill",
                                     title: "This Month",
-                                    value: "24"
+                                    value: String(statThisMonth)
                                 )
                             }
                             .padding(.horizontal)
@@ -361,6 +374,9 @@ struct NFCTagEditorView: View {
                     }
                 }
             }
+            .refreshable {
+                fetchStatistics()
+            }
         }
         .background(Theme.cream.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
@@ -402,6 +418,16 @@ struct NFCTagEditorView: View {
                     }
                 }
             }
+            // Firestore snapshot listener ile istatistikleri canlı güncelle
+            statsListener?.remove()
+            statsListener = Firestore.firestore().collection("animals").addSnapshotListener { _, _ in
+                fetchStatistics()
+            }
+            fetchStatistics()
+        }
+        .onDisappear {
+            statsListener?.remove()
+            statsListener = nil
         }
         .onTapGesture {
             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
@@ -453,6 +479,7 @@ struct NFCTagEditorView: View {
             // Internet is available, try to save to Firebase first
             FirebaseManager.shared.saveAnimalData(nfcAnimalData) { result in
                 DispatchQueue.main.async {
+                    fetchStatistics()
                     switch result {
                     case .success(let id):
                         // Firebase save successful, now write to NFC tag
@@ -551,8 +578,38 @@ struct NFCTagEditorView: View {
             EditorTextField(text: $currentFarmId, label: "Current Farm ID", keyboardType: .numberPad)
             // Additional Information
             sectionTitle("Additional Information")
-            DateField(date: $deathDate, label: "Death Date")
-                .padding(.horizontal, 0)
+            VStack(alignment: .leading, spacing: 5) {
+                Text("Death Date")
+                    .foregroundColor(Theme.darkGreen)
+                    .font(.subheadline)
+                if let date = deathDate {
+                    HStack {
+                        DatePicker("", selection: Binding(get: { date }, set: { deathDate = $0 }), displayedComponents: [.date])
+                            .datePickerStyle(CompactDatePickerStyle())
+                            .labelsHidden()
+                            .accentColor(Theme.rust)
+                            .foregroundColor(Theme.darkGreen)
+                            .environment(\.colorScheme, .light)
+                        Button(action: { deathDate = nil }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(Theme.rust)
+                        }
+                    }
+                } else {
+                    Button(action: { deathDate = Date() }) {
+                        Text("Select Date")
+                            .foregroundColor(Theme.darkGreen)
+                            .padding(10)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.white)
+                            .cornerRadius(8)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Theme.lightGreen, lineWidth: 1)
+                            )
+                    }
+                }
+            }
             EditorTextField(text: $deathLocation, label: "Death Location")
             EditorTextField(text: $exportCountry, label: "Export Country")
         }
