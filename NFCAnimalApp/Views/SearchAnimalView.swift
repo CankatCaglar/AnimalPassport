@@ -248,6 +248,7 @@ struct SearchAnimalView: View {
                             RoundedRectangle(cornerRadius: 12)
                                 .stroke(Theme.rust, lineWidth: 2)
                         )
+                        
                         Button(action: searchAnimal) {
                             Image(systemName: "magnifyingglass")
                                 .font(.system(size: 20))
@@ -369,6 +370,9 @@ struct SearchAnimalView: View {
         } message: {
             Text(errorMessage ?? "Unknown error occurred")
         }
+        .onTapGesture {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
     }
     
     private func searchAnimal() {
@@ -433,16 +437,16 @@ struct InfoRow: View {
     let value: String
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.subheadline)
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text("\(title):")
+                .font(.system(size: 17, weight: .regular))
                 .foregroundColor(Theme.brown)
-                .frame(maxWidth: .infinity, alignment: .leading)
             Text(value)
-                .font(.body)
+                .font(.system(size: 17, weight: .bold))
                 .foregroundColor(Theme.darkGreen)
-                .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 2)
     }
 }
 
