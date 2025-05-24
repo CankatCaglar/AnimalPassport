@@ -72,6 +72,10 @@ struct NFCTagEditorView: View {
     @State private var statThisMonth: Int = 0
     @State private var statsListener: ListenerRegistration? = nil
     
+    // Add validation state variables
+    @State private var validationErrors: [String: String] = [:]
+    @State private var showingValidationError = false
+    
     let genderOptions = ["Male", "Female"]
     
     private func clearAllFields() {
@@ -172,6 +176,261 @@ struct NFCTagEditorView: View {
         }
     }
     
+    // Add validation functions
+    private func validateAnimalId() -> Bool {
+        if animalId.isEmpty {
+            validationErrors["animalId"] = "Animal ID is required"
+            return false
+        }
+        if !animalId.isNumeric {
+            validationErrors["animalId"] = "Animal ID must be numeric"
+            return false
+        }
+        validationErrors.removeValue(forKey: "animalId")
+        return true
+    }
+    
+    private func validateAnimalName() -> Bool {
+        if animalName.isEmpty {
+            validationErrors["animalName"] = "Animal Name is required"
+            return false
+        }
+        if !animalName.isAlphabeticWithSpaces {
+            validationErrors["animalName"] = "Animal Name must contain only letters and spaces"
+            return false
+        }
+        validationErrors.removeValue(forKey: "animalName")
+        return true
+    }
+    
+    private func validateBirthDate() -> Bool {
+        // Birth date is always valid as it's a Date object with a default value
+        return true
+    }
+    
+    private func validateGender() -> Bool {
+        if gender.isEmpty {
+            validationErrors["gender"] = "Gender is required"
+            return false
+        }
+        validationErrors.removeValue(forKey: "gender")
+        return true
+    }
+    
+    private func validateBreed() -> Bool {
+        if breed.isEmpty {
+            validationErrors["breed"] = "Breed is required"
+            return false
+        }
+        if !breed.isAlphabeticWithSpaces {
+            validationErrors["breed"] = "Breed must contain only letters and spaces"
+            return false
+        }
+        validationErrors.removeValue(forKey: "breed")
+        return true
+    }
+    
+    private func validateParentId() -> Bool {
+        if parentId.isEmpty {
+            validationErrors["parentId"] = "Parent ID is required"
+            return false
+        }
+        if !parentId.isNumeric {
+            validationErrors["parentId"] = "Parent ID must be numeric"
+            return false
+        }
+        validationErrors.removeValue(forKey: "parentId")
+        return true
+    }
+    
+    private func validateBirthFarmId() -> Bool {
+        if birthFarmId.isEmpty {
+            validationErrors["birthFarmId"] = "Birth Farm ID is required"
+            return false
+        }
+        if !birthFarmId.isNumeric {
+            validationErrors["birthFarmId"] = "Birth Farm ID must be numeric"
+            return false
+        }
+        validationErrors.removeValue(forKey: "birthFarmId")
+        return true
+    }
+    
+    private func validateCurrentFarmId() -> Bool {
+        if currentFarmId.isEmpty {
+            validationErrors["currentFarmId"] = "Current Farm ID is required"
+            return false
+        }
+        if !currentFarmId.isNumeric {
+            validationErrors["currentFarmId"] = "Current Farm ID must be numeric"
+            return false
+        }
+        validationErrors.removeValue(forKey: "currentFarmId")
+        return true
+    }
+    
+    private func validateOwnerFirstName() -> Bool {
+        if ownerFirstName.isEmpty {
+            validationErrors["ownerFirstName"] = "Owner First Name is required"
+            return false
+        }
+        if !ownerFirstName.isAlphabeticWithSpaces {
+            validationErrors["ownerFirstName"] = "Owner First Name must contain only letters and spaces"
+            return false
+        }
+        validationErrors.removeValue(forKey: "ownerFirstName")
+        return true
+    }
+    
+    private func validateOwnerLastName() -> Bool {
+        if ownerLastName.isEmpty {
+            validationErrors["ownerLastName"] = "Owner Last Name is required"
+            return false
+        }
+        if !ownerLastName.isAlphabeticWithSpaces {
+            validationErrors["ownerLastName"] = "Owner Last Name must contain only letters and spaces"
+            return false
+        }
+        validationErrors.removeValue(forKey: "ownerLastName")
+        return true
+    }
+    
+    private func validateOwnerIdNumber() -> Bool {
+        if ownerIdNumber.isEmpty {
+            validationErrors["ownerIdNumber"] = "Owner ID Number is required"
+            return false
+        }
+        if !ownerIdNumber.isNumeric {
+            validationErrors["ownerIdNumber"] = "Owner ID Number must be numeric"
+            return false
+        }
+        validationErrors.removeValue(forKey: "ownerIdNumber")
+        return true
+    }
+    
+    private func validateDeathLocation() -> Bool {
+        if !deathLocation.isEmpty && !deathLocation.isAlphabeticWithSpaces {
+            validationErrors["deathLocation"] = "Death Location must contain only letters and spaces"
+            return false
+        }
+        validationErrors.removeValue(forKey: "deathLocation")
+        return true
+    }
+    
+    private func validateExportCountry() -> Bool {
+        if !exportCountry.isEmpty && !exportCountry.isAlphabeticWithSpaces {
+            validationErrors["exportCountry"] = "Export Country must contain only letters and spaces"
+            return false
+        }
+        validationErrors.removeValue(forKey: "exportCountry")
+        return true
+    }
+    
+    private func validateSlaughterhouseName() -> Bool {
+        if !slaughterhouseName.isEmpty && !slaughterhouseName.isAlphabeticWithSpaces {
+            validationErrors["slaughterhouseName"] = "Slaughterhouse Name must contain only letters and spaces"
+            return false
+        }
+        validationErrors.removeValue(forKey: "slaughterhouseName")
+        return true
+    }
+    
+    private func validateSlaughterhouseAddress() -> Bool {
+        if !slaughterhouseAddress.isEmpty && !slaughterhouseAddress.isAlphabeticWithSpaces {
+            validationErrors["slaughterhouseAddress"] = "Slaughterhouse Address must contain only letters and spaces"
+            return false
+        }
+        validationErrors.removeValue(forKey: "slaughterhouseAddress")
+        return true
+    }
+    
+    private func validateSlaughterhouseLicenseNo() -> Bool {
+        if !slaughterhouseLicenseNo.isEmpty && !slaughterhouseLicenseNo.isNumeric {
+            validationErrors["slaughterhouseLicenseNo"] = "License Number must be numeric"
+            return false
+        }
+        validationErrors.removeValue(forKey: "slaughterhouseLicenseNo")
+        return true
+    }
+    
+    private func validateFarmPhone() -> Bool {
+        if !farmPhone.isEmpty && !farmPhone.isNumeric {
+            validationErrors["farmPhone"] = "Phone must be numeric"
+            return false
+        }
+        validationErrors.removeValue(forKey: "farmPhone")
+        return true
+    }
+    
+    private func validateFarmFax() -> Bool {
+        if !farmFax.isEmpty && !farmFax.isNumeric {
+            validationErrors["farmFax"] = "Fax must be numeric"
+            return false
+        }
+        validationErrors.removeValue(forKey: "farmFax")
+        return true
+    }
+    
+    private func validateFarmEmail() -> Bool {
+        if !farmEmail.isEmpty && !farmEmail.isValidEmail {
+            validationErrors["farmEmail"] = "Invalid email format"
+            return false
+        }
+        validationErrors.removeValue(forKey: "farmEmail")
+        return true
+    }
+    
+    private func validateAll() -> Bool {
+        let validations = [
+            validateAnimalId(),
+            validateAnimalName(),
+            validateBirthDate(),
+            validateGender(),
+            validateBreed(),
+            validateParentId(),
+            validateBirthFarmId(),
+            validateCurrentFarmId(),
+            validateOwnerFirstName(),
+            validateOwnerLastName(),
+            validateOwnerIdNumber(),
+            // Optional field validations
+            validateDeathLocation(),
+            validateExportCountry(),
+            validateSlaughterhouseName(),
+            validateSlaughterhouseAddress(),
+            validateSlaughterhouseLicenseNo(),
+            validateFarmPhone(),
+            validateFarmFax(),
+            validateFarmEmail()
+        ]
+        
+        return validations.allSatisfy { $0 }
+    }
+    
+    // Add computed property to check if form is valid
+    private var isFormValid: Bool {
+        return validateAll()
+    }
+    
+    // Update the write button in the view
+    private var writeButton: some View {
+        Button(action: writeToNFCTag) {
+            HStack(spacing: 10) {
+                Image(systemName: "wave.3.right.circle.fill")
+                    .font(.system(size: 22))
+                    .foregroundColor(.white)
+                Text("Write Tag")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundColor(.white)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 50)
+            .background(isFormValid ? Theme.rust : Color.gray)
+            .cornerRadius(12)
+        }
+        .disabled(!isFormValid)
+    }
+    
     var body: some View {
         ZStack {
             Theme.cream.ignoresSafeArea()
@@ -206,11 +465,11 @@ struct NFCTagEditorView: View {
                                 )
                                 .shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 2)
                             }
-                            Button(action: { 
+                            Button(action: {
                                 if showAnimalForm {
                                     clearAllFields()
                                 }
-                                showAnimalForm.toggle() 
+                                showAnimalForm.toggle()
                             }) {
                                 HStack(spacing: 10) {
                                     Image(systemName: showAnimalForm ? "minus.circle.fill" : "plus.circle.fill")
@@ -242,22 +501,7 @@ struct NFCTagEditorView: View {
                                     farmInfoSection
                                     sectionTitle("Owner Information")
                                     ownerInfoSection
-                                    Button(action: writeToNFCTag) {
-                                        HStack(spacing: 10) {
-                                            Image(systemName: "wave.3.right.circle.fill")
-                                                .font(.system(size: 22))
-                                                .foregroundColor(.white)
-                                            Text("Write Tag")
-                                                .font(.system(size: 17, weight: .semibold))
-                                                .foregroundColor(.white)
-                                        }
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 50)
-                                        .background(Theme.rust)
-                                        .cornerRadius(12)
-                                    }
-                                    .padding(.top, 16)
-                                    .padding(.bottom, 32)
+                                    writeButton
                                 }
                                 .padding(.top, 20)
                             }
@@ -407,6 +651,11 @@ struct NFCTagEditorView: View {
         } message: {
             Text(readDataMessage)
         }
+        .alert("Validation Error", isPresented: $showingValidationError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(validationErrors.values.joined(separator: "\n"))
+        }
         .onAppear {
             // Activities will be automatically loaded by the ViewModel
             // Kullanıcı tipini Firestore'dan çek
@@ -475,6 +724,11 @@ struct NFCTagEditorView: View {
     }
     
     private func writeToNFCTag() {
+        if !validateAll() {
+            showingValidationError = true
+            return
+        }
+        
         if OfflineManager.shared.isInternetAvailable() {
             // Internet is available, try to save to Firebase first
             FirebaseManager.shared.saveAnimalData(nfcAnimalData) { result in
@@ -539,13 +793,23 @@ struct NFCTagEditorView: View {
     
     private var animalInfoSection: some View {
         VStack(alignment: .leading, spacing: 15) {
-            EditorTextField(text: $animalId, label: "Animal ID", keyboardType: .numberPad)
-            EditorTextField(text: $animalName, label: "Animal Name")
-            DateField(date: $birthDate, label: "Birth Date")
+            EditorTextField(
+                text: $animalId,
+                label: "Animal ID *",
+                keyboardType: .numberPad,
+                error: validationErrors["animalId"]
+            )
+            EditorTextField(
+                text: $animalName,
+                label: "Animal Name *",
+                keyboardType: .default,
+                error: validationErrors["animalName"]
+            )
+            DateField(date: $birthDate, label: "Birth Date *")
                 .padding(.horizontal, 0)
             // Gender Selector
             VStack(alignment: .leading, spacing: 5) {
-                Text("Gender")
+                Text("Gender *")
                     .foregroundColor(Theme.darkGreen)
                     .font(.subheadline)
                 Button(action: { showGenderSheet = true }) {
@@ -561,21 +825,46 @@ struct NFCTagEditorView: View {
                     .cornerRadius(8)
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
-                            .stroke(Theme.lightGreen, lineWidth: 1)
+                            .stroke(validationErrors["gender"] != nil ? Color.red : Theme.lightGreen, lineWidth: 1)
                     )
                 }
-                .actionSheet(isPresented: $showGenderSheet) {
-                    ActionSheet(title: Text("Select Gender"), buttons: [
-                        .default(Text("Male")) { gender = "Male" },
-                        .default(Text("Female")) { gender = "Female" },
-                        .cancel()
-                    ])
+            .actionSheet(isPresented: $showGenderSheet) {
+                                        ActionSheet(title: Text("Select Gender"), buttons: [
+                                            .default(Text("Male")) { gender = "Male" },
+                                            .default(Text("Female")) { gender = "Female" },
+                                            .cancel()
+                                        ])
+                                    }
+                if let error = validationErrors["gender"] {
+                    Text(error)
+                        .foregroundColor(.red)
+                        .font(.caption)
                 }
             }
-            EditorTextField(text: $breed, label: "Breed")
-            EditorTextField(text: $parentId, label: "Parent ID", keyboardType: .numberPad)
-            EditorTextField(text: $birthFarmId, label: "Birth Farm ID", keyboardType: .numberPad)
-            EditorTextField(text: $currentFarmId, label: "Current Farm ID", keyboardType: .numberPad)
+            EditorTextField(
+                text: $breed,
+                label: "Breed *",
+                keyboardType: .default,
+                error: validationErrors["breed"]
+            )
+            EditorTextField(
+                text: $parentId,
+                label: "Parent ID *",
+                keyboardType: .numberPad,
+                error: validationErrors["parentId"]
+            )
+            EditorTextField(
+                text: $birthFarmId,
+                label: "Birth Farm ID *",
+                keyboardType: .numberPad,
+                error: validationErrors["birthFarmId"]
+            )
+            EditorTextField(
+                text: $currentFarmId,
+                label: "Current Farm ID *",
+                keyboardType: .numberPad,
+                error: validationErrors["currentFarmId"]
+            )
             // Additional Information
             sectionTitle("Additional Information")
             VStack(alignment: .leading, spacing: 5) {
@@ -792,10 +1081,30 @@ struct NFCTagEditorView: View {
     
     private var ownerInfoSection: some View {
         VStack(alignment: .leading, spacing: 15) {
-            EditorTextField(text: $ownerFirstName, label: "First Name")
-            EditorTextField(text: $ownerLastName, label: "Last Name")
-            EditorTextField(text: $ownerIdNumber, label: "ID Number", keyboardType: .numberPad)
-            EditorTextField(text: $ownerAddress, label: "Address")
+            EditorTextField(
+                text: $ownerFirstName,
+                label: "First Name *",
+                keyboardType: .default,
+                error: validationErrors["ownerFirstName"]
+            )
+            EditorTextField(
+                text: $ownerLastName,
+                label: "Last Name *",
+                keyboardType: .default,
+                error: validationErrors["ownerLastName"]
+            )
+            EditorTextField(
+                text: $ownerIdNumber,
+                label: "ID Number *",
+                keyboardType: .numberPad,
+                error: validationErrors["ownerIdNumber"]
+            )
+            EditorTextField(
+                text: $ownerAddress,
+                label: "Address",
+                keyboardType: .default,
+                error: validationErrors["ownerAddress"]
+            )
         }
     }
     
@@ -817,6 +1126,7 @@ struct EditorTextField: View {
     @Binding var text: String
     let label: String
     var keyboardType: UIKeyboardType = .default
+    var error: String?
     
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
@@ -830,9 +1140,14 @@ struct EditorTextField: View {
                 .cornerRadius(8)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(Theme.lightGreen, lineWidth: 1)
+                        .stroke(error != nil ? Color.red : Theme.lightGreen, lineWidth: 1)
                 )
                 .keyboardType(keyboardType)
+            if let error = error {
+                Text(error)
+                    .foregroundColor(.red)
+                    .font(.caption)
+            }
         }
     }
 }
@@ -915,4 +1230,21 @@ struct StatCard: View {
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
-} 
+}
+
+// Add String extensions for validation
+extension String {
+    var isNumeric: Bool {
+        return !isEmpty && rangeOfCharacter(from: CharacterSet.decimalDigits.inverted) == nil
+    }
+    
+    var isAlphabeticWithSpaces: Bool {
+        return !isEmpty && rangeOfCharacter(from: CharacterSet.letters.union(CharacterSet.whitespaces).inverted) == nil
+    }
+    
+    var isValidEmail: Bool {
+        let emailRegEx = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+        let emailPred = NSPredicate(format:"SELF MATCHES %@", emailRegEx)
+        return emailPred.evaluate(with: self)
+    }
+}

@@ -41,8 +41,22 @@ class FirebaseManager {
             return
         }
         
+        
         do {
             // First convert to JSON string to handle dates properly
+            
+            if animalData.id.isEmpty ||
+               animalData.animalName?.isEmpty ?? true ||
+               animalData.gender.isEmpty ||
+               animalData.breed.isEmpty ||
+               animalData.parentId?.isEmpty ?? true ||
+               animalData.birthFarmId.isEmpty ||
+               animalData.currentFarmId.isEmpty ||
+               animalData.ownerInformation.firstName.isEmpty ||
+               animalData.ownerInformation.lastName.isEmpty ||
+                animalData.ownerInformation.idNumber.isEmpty {
+                completion(.failure(FirebaseError.invalidData))
+                return }
             let jsonString = try animalData.toJSON()
             guard let jsonData = jsonString.data(using: .utf8),
                   var dictionary = try JSONSerialization.jsonObject(with: jsonData) as? [String: Any] else {
